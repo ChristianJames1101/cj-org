@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organization Office</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: url(images/homepage.jpg) fixed no-repeat center center / cover;
+        }
+
+        header {
+            background-color: #333;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center; 
+        }
+
+        header h1 {
+            margin: 0;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        header button {
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            border-radius: 5px;
+        }
+
+        header button:hover {
+            background-color: #555;
+        }
+
+        main {
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        caption {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .form-container, .password-form-container {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            width: 300px;
+        }
+
+        .form-container input, .password-form-container input {
+            display: block;
+            margin-bottom: 10px;
+            padding: 8px;
+            width: calc(100% - 16px);
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .form-container button, .password-form-container button {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .action-buttons button {
+            padding: 5px 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .action-buttons .edit-btn {
+            background-color: green;
+            color: white;
+        }
+
+        .action-buttons .remove-btn {
+            background-color: red;
+            color: white;
+        }
+        .alert-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000; 
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>CJ's Organization Employees</h1>
+        <div class="header-buttons">
+            <button class="add-btn" onclick="showForm('add')">Add an Employee</button>
+            <button class="logout-btn" onclick="redirectToLogin()">Log Out</button>
+            <button class="change-password-btn" onclick="showChangePasswordForm()">Change Password</button>
+        </div>
+    </header>
+
+    <main>
+        <table id="documentTable">
+            <thead>
+                <tr>
+                    <th>Employee ID</th>
+                    <th>Name</th>
+                    <th>Department</th>
+                    <th>Position</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+             
+            </tbody>
+        </table>
+    </main>
+
+    <div class="overlay" onclick="hideForm()"></div>
+    <div class="form-container">
+        <h2 id="formTitle">Add an Employee</h2>
+        <input type="text" id="employeeName" placeholder="Name">
+        <input type="text" id="employeeDepartment" placeholder="Department">
+        <input type="text" id="employeePosition" placeholder="Position">
+        <button onclick="saveEmployee()">Save</button>
+        <button onclick="hideForm()">Cancel</button>
+    </div>
+
+    <div class="password-form-container">
+        <h2>Change Password</h2>
+        <input type="password" id="newPassword" placeholder="New Password">
+        <input type="password" id="confirmPassword" placeholder="Confirm Password">
+        <button onclick="changePassword()">Change Password</button>
+        <button onclick="hideChangePasswordForm()">Cancel</button>
+    </div>
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-app.js";
+        import { getDatabase, ref, push, set, update, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-database.js";
+        import { getAuth, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-auth.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCV3pL1eece0iwDNK4lJrMrNl0-qsDHCQk",
+            authDomain: "docureq-a7e0c.firebaseapp.com",
+            databaseURL: "https://docureq-a7e0c-default-rtdb.firebaseio.com",
+            projectId: "docureq-a7e0c",
+            storageBucket: "docureq-a7e0c.appspot.com",
+            messagingSenderId: "790280304492",
+            appId: "1:790280304492:web:e3c26395315b1a9a876549"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const auth = getAuth();
+        let editEmployeeId = null;
+
+        window.showForm = function(mode, id) {
+            document.querySelector('.form-container').style.display = 'block';
+            document.querySelector('.overlay').style.display = 'block';
+            if (mode === 'edit') {
+                document.getElementById('formTitle').textContent = 'Edit Employee';
+                editEmployeeId = id;
+                const employeeRef = ref(database, 'employees/' + id);
+                onValue(employeeRef, snapshot => {
+                    const employee = snapshot.val();
+                    document.getElementById('employeeName').value = employee.name;
+                    document.getElementById('employeeDepartment').value = employee.department;
+                    document.getElementById('employeePosition').value = employee.position;
+                });
+            } else {
+                document.getElementById('formTitle').textContent = 'Add an Employee';
+                document.getElementById('employeeName').value = '';
+                document.getElementById('employeeDepartment').value = '';
+                document.getElementById('employeePosition').value = '';
+                editEmployeeId = null;
+            }
+        }
+
+        window.hideForm = function() {
+            document.querySelector('.form-container').style.display = 'none';
+            document.querySelector('.overlay').style.display = 'none';
+        }
+
+        window.showAlert = function(message, type) {
+            const alertContainer = document.createElement('div');
+            alertContainer.className = 'alert-container';
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert ${type}`;
+            alertDiv.textContent = message;
+            alertContainer.appendChild(alertDiv);
+            document.body.appendChild(alertContainer);
+            setTimeout(() => {
+                alertContainer.remove();
+            }, 3000); 
+        }
+
+        window.saveEmployee = async function() {
+            const name = document.getElementById('employeeName').value;
+            const department = document.getElementById('employeeDepartment').value;
+            const position = document.getElementById('employeePosition').value;
+
+            if (!name || !department || !position) {
+                showAlert('Please fill all the fields.', 'alert-danger');
+                return;
+            }
+
+            if (editEmployeeId) {
+                const employeeRef = ref(database, 'employees/' + editEmployeeId);
+                update(employeeRef, {
+                    name: name,
+                    department: department,
+                    position: position
+                }).then(() => {
+                    showAlert('Employee updated successfully!', 'alert-success');
+                    hideForm();
+                    loadEmployees();
+                }).catch(error => {
+                    console.error('Error updating employee:', error);
+                });
+            } else {
+                const newEmployeeRef = push(ref(database, 'employees'));
+                const employeeId = newEmployeeRef.key;
+
+                set(newEmployeeRef, {
+                    id: employeeId,
+                    name: name,
+                    department: department,
+                    position: position
+                }).then(() => {
+                    showAlert('Employee added successfully!', 'alert-success');
+                    hideForm();
+                    loadEmployees();
+                }).catch(error => {
+                    console.error('Error adding employee:', error);
+                });
+            }
+        }
+
+        window.loadEmployees = function() {
+            const employeesRef = ref(database, 'employees');
+            onValue(employeesRef, snapshot => {
+                const employees = snapshot.val();
+                const tbody = document.querySelector('#documentTable tbody');
+                tbody.innerHTML = '';
+
+                for (const id in employees) {
+                    const employee = employees[id];
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${employee.id}</td>
+                        <td>${employee.name}</td>
+                        <td>${employee.department}</td>
+                        <td>${employee.position}</td>
+                        <td class="action-buttons">
+                            <button class="edit-btn" onclick="showForm('edit', '${id}')">Edit</button>
+                            <button class="remove-btn" onclick="removeEmployee('${id}')">Remove</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+        }
+
+        window.removeEmployee = function(id) {
+            const employeeRef = ref(database, 'employees/' + id);
+            remove(employeeRef).then(() => {
+                showAlert('Employee removed successfully!', 'alert-success');
+                loadEmployees();
+            }).catch(error => {
+                console.error('Error removing employee:', error);
+            });
+        }
+
+        window.redirectToLogin = function() {
+            window.location.href = 'index.html'; 
+        }
+
+        window.showChangePasswordForm = function() {
+            document.querySelector('.password-form-container').style.display = 'block';
+            document.querySelector('.overlay').style.display = 'block';
+        }
+
+        window.hideChangePasswordForm = function() {
+            document.querySelector('.password-form-container').style.display = 'none';
+            document.querySelector('.overlay').style.display = 'none';
+        }
+
+        window.changePassword = function() {
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (newPassword !== confirmPassword) {
+                showAlert('Passwords do not match.', 'alert-danger');
+                return;
+            }
+
+            const user = auth.currentUser;
+
+            if (user) {
+                updatePassword(user, newPassword).then(() => {
+                    showAlert('Password changed successfully!', 'alert-success');
+                    hideChangePasswordForm();
+                }).catch(error => {
+                    console.error('Error changing password:', error);
+                    showAlert(error.message, 'alert-danger');
+                });
+            } else {
+                showAlert('No user is logged in.', 'alert-danger');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadEmployees);
+    </script>
+</body>
+</html>

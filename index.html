@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>CJ's Organization login</title>
+</head>
+<body>
+    <div class="welcome-page" id="welcomePage">
+        <h1>CJ's Organization</h1>
+        <p>manage employees within the office with ease.</p>
+        <button class="get-started-btn" onclick="redirectToLogin()">Get Started</button>
+    </div>
+
+    <div class="login-box" id="loginBox"> 
+        <div class="back-btn-container">
+            <button class="back-btn" onclick="goBack()"><img src="images/back.png" alt="Back"></button>
+        </div>
+        <div class="login-header">
+            <header>Login</header>
+        </div>
+        <div id="signInMessage" class="messageDiv" style="display:none;"></div>
+        <div class="input-box">
+            <input type="text" id="email" class="input-field" placeholder="Email" autocomplete="off" required>
+        </div>
+        <div class="input-box">
+            <input type="password" id="password" class="input-field" placeholder="Password" autocomplete="off" required>
+        </div>
+        <div class="forgot">
+            <section>
+                <input type="checkbox" id="check">
+                <label for="check">Remember me</label>
+            </section>
+            <section>
+                <a href="#" id="reset">Forgot password?</a>
+            </section>
+        </div>
+        <div class="input-submit">
+            <button class="submit-btn" id="submitSignIn">Sign In</button>
+        </div>
+        <div class="sign-up-link">
+            <p>Don't have an account? <a href="#" onclick="showSignUp()">Sign Up</a></p>
+        </div>
+    </div>
+    
+    <div class="container" id="signup" style="display:none;">
+        <div class="signup-box" id="signupBox">
+            <div class="signup-header">
+                <header>Sign Up</header>
+            </div>
+            <div id="signUpMessage" class="messageDiv" style="display:none;"></div>
+            <div class="input-box">
+                <input type="text" id="lname" class="input-field" placeholder="Last Name" autocomplete="off" required>
+            </div>
+            <div class="input-box">
+                <input type="text" id="fname" class="input-field" placeholder="First Name" autocomplete="off" required>
+            </div>
+            <div class="input-box">
+                <input type="text" id="mname" class="input-field" placeholder="Middle Name" autocomplete="off">
+            </div>
+            <div class="input-box">
+                <input type="date" id="Bdate" class="input-field" placeholder="Birth Date" autocomplete="off" required>
+            </div>
+            <div class="input-box">
+                <input type="text" id="rAddress" class="input-field" placeholder="Address" autocomplete="off" required>
+            </div>
+            <div class="input-box">
+                <input type="email" id="rEmail" class="input-field" placeholder="Email" autocomplete="off" required>
+            </div>
+            <div class="input-box">
+                <input type="password" id="rPassword" class="input-field" placeholder="Password" autocomplete="off" required>
+            </div>
+            <div class="input-submit">
+                <button class="submit-btn" id="submitSignUp">Sign Up</button>
+            </div>
+            <div class="back-to-login">
+                <p>Already have an account? <a href="#" onclick="showLogin()">Log In</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="firebaseauth.js" type="module"></script>
+    <script>
+        function redirectToMainForm() {
+            window.location.href = "mainform.html";
+        }
+
+        function redirectToLogin() {
+            const welcomePage = document.getElementById('welcomePage');
+            const loginBox = document.getElementById('loginBox');
+            const signUpContainer = document.getElementById('signup');
+
+            welcomePage.style.opacity = '0'; 
+            setTimeout(() => {
+                welcomePage.style.display = 'none'; 
+                loginBox.style.opacity = '1'; 
+                loginBox.style.display = 'block'; 
+                signUpContainer.style.display = 'none'; 
+            }, 300); 
+        }
+
+        function goBack() {
+            const welcomePage = document.getElementById('welcomePage');
+            const loginBox = document.getElementById('loginBox');
+            const signUpContainer = document.getElementById('signup');
+
+            loginBox.style.opacity = '0'; 
+            setTimeout(() => {
+                loginBox.style.display = 'none'; 
+                welcomePage.style.opacity = '1'; 
+                welcomePage.style.display = 'block';
+                signUpContainer.style.display = 'none'; 
+            }, 300); 
+        }
+
+        function showSignUp() {
+            const signUpContainer = document.getElementById('signup');
+            const loginBox = document.getElementById('loginBox');
+            const welcomePage = document.getElementById('welcomePage');
+
+            loginBox.style.opacity = '0'; 
+            welcomePage.style.opacity = '0'; 
+
+            setTimeout(() => {
+                loginBox.style.display = 'none'; 
+                welcomePage.style.display = 'none'; 
+                signUpContainer.style.display = 'block'; 
+                signUpContainer.style.opacity = '1'; 
+            }, 300);
+        }
+
+        function showLogin() {
+            const signUpContainer = document.getElementById('signup');
+            const loginBox = document.getElementById('loginBox');
+            const welcomePage = document.getElementById('welcomePage');
+
+            signUpContainer.style.opacity = '0'; 
+            welcomePage.style.opacity = '0'; 
+
+            setTimeout(() => {
+                signUpContainer.style.display = 'none'; 
+                welcomePage.style.display = 'none'; 
+                loginBox.style.display = 'block'; 
+                loginBox.style.opacity = '1'; 
+            }, 300);
+        }
+    </script>
+</body>
+</html>
